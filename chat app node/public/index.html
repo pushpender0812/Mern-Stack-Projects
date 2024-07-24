@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+</head>
+<body>
+    <div id="messages"></div>
+    <p>hello world !!!!!</p>
+    <script>
+        var socket = io();
+        socket.on('connectedRoom', function(data) {
+            document.body.innerHTML = '';
+            document.write(data);
+        });
+    </script>
+</body>
+</html>

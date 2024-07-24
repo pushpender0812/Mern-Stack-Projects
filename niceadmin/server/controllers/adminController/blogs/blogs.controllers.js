@@ -1,0 +1,127 @@
+const Blog = require("../../../model/blogs-model");
+const path = require("path")
+const fs = require("fs");
+const Category = require("../../../model/category-model");
+
+
+const addblogPage = async (req, res) => {
+  try {
+    const catedata = await Category.find()
+    res.render("Layout", { body: "Blogs/AddBlogs" ,data:catedata });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const blogData = async (req, res) => {
+  const { author_name, blog_name, blog_description, blog_category } = req.body;
+  console.log(author_name, blog_name, blog_description);
+  const blog_image = req.file.filename;
+  const strippedDescription = blog_description.replace(/<\/?[^>]+(>|$)/g, "");
+  console.log(blog_image);
+  const datablog = new Blog({
+    author_name,
+    blog_name,
+    blog_description:strippedDescription,
+    blog_image,
+    blog_category,
+  });
+  await datablog.save();
+  res.redirect("/admin/user/blog/add-blog");
+};
+
+const viewBlogs = async (req, res) => {
+  try {
+    const blogdata = await Blog.find();
+    res.render("Layout", { body: "Blogs/ViewBlogs", data: blogdata });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const deleteBlog = async (req, res) => {
+  try {
+    await Blog.findByIdAndDelete({ _id: req.params.id });
+    res.redirect("/admin/user/blog/view-blog");
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const editBlog = async (req, res) => {
+  try {
+    const editblg = await Blog.findOne({ _id: req.params.id });
+    // const catedata = await Category.find()
+    res.render("Layout", { body: "Blogs/EditBlog", data: editblg });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+const updateBlog = async (req, res) => {
+  try {
+    console.log(req.body);
+    const _id = req.params.id;
+    const blog_description = req.body.blog_description
+    // const strippedDescription = blog_description.replace(/<\/?[^>]+(>|$)/g, "");
+    console.log(_id);
+   console.log("fghyh");
+    if (req.file) {
+      const deleteImage = await Blog.findOne({ _id: _id });
+            console.log("puug");
+      console.log("Image name to be Updated", deleteImage);
+
+      if (deleteImage.blog_image) {
+        console.log("jsdg");
+        fs.unlink(
+          path.join(__dirname, "../../../uploads", deleteImage.blog_image),
+          (err) => {
+            if (err) {
+              console.error("Error while deleting the image", err);
+              return;
+            }
+            console.log("Image Updated successfully");
+          }
+        );
+      } else {
+        console.log("No Such Image Exists");
+      }
+ console.log("yadaav");
+      await Blog.findByIdAndUpdate(
+        { _id },
+        {
+            author_name: req.body.author_name,
+            blog_name: req.body.blog_name,
+            blog_description:blog_description ,
+            blog_category: req.body.blog_category,
+             blog_image: req.file.filename,
+        }
+      );
+      return res.redirect("/admin/user/blog/view-blog");
+    }
+       console.log("yadadv");
+    await Blog.findByIdAndUpdate(
+      { _id },
+      {
+        author_name: req.body.author_name,
+        blog_name: req.body.blog_name,
+        blog_description: blog_description,
+        blog_category: req.body.blog_category,
+      }
+    );
+
+    console.log("Blog Updated Successfully");
+    return res.redirect("/admin/user/blog/view-blog");
+  } catch (error) {
+    console.log("Error while updating Blog", error);
+  }
+};
+
+module.exports = {
+  addblogPage,
+  blogData,
+  viewBlogs,
+  deleteBlog,
+  editBlog,
+  updateBlog,
+};
